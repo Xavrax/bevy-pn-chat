@@ -57,5 +57,5 @@
 pub use error::BevyPNError;
 pub mod error;
 
-pub use plugin::{ChatPlugin, Keyset};
-pub mod plugin;
+pub use builder::{ChatPlugin, Keyset};
+pub mod builder;
