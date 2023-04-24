@@ -21,10 +21,13 @@
 //! # Ok(())}
 //! ```
 
-use crate::error::{BevyPNError, Result};
+use crate::{
+    error::{BevyPNError, Result},
+    ChatPlugin,
+};
 use derive_builder::Builder;
 
-/// This struct is a plugin for Bevy engine.
+/// This struct is a config for [`ChatPlugin`].
 ///
 /// It is used to configure the plugin and to add it to the Bevy app.
 ///
@@ -45,9 +48,14 @@ use derive_builder::Builder;
 #[derive(Debug, Clone, Builder)]
 #[builder(
     pattern = "owned",
-    build_fn(validate = "Self::validate", error = "BevyPNError")
+    build_fn(
+        validate = "Self::validate",
+        error = "BevyPNError",
+        vis = "",
+        name = "internal_build"
+    )
 )]
-pub struct ChatPlugin {
+pub struct ChatPluginConfig {
     #[builder(setter(custom))]
     keyset: Keyset<String>,
 
@@ -60,32 +68,16 @@ pub struct ChatPlugin {
     username: String,
 }
 
-impl ChatPlugin {
-    /// Creates a new [`ChatPluginBuilder`].
+impl ChatPluginConfigBuilder {
+    /// Builds the [`ChatPluginConfig`] and returns a [`ChatPlugin`].
     ///
-    /// This is used to configure the plugin.
-    /// The [`ChatPluginBuilder`] is then used to create the [`ChatPlugin`].
+    /// # Errors
     ///
-    /// # Example
-    /// ```rust
-    /// use bevy_pn_chat::{ChatPlugin, Keyset};
-    ///
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let chat = ChatPlugin::builder()
-    ///           .keyset(Keyset{
-    ///               publish_key: "pub-c-...",
-    ///               subscribe_key: "sub-c-..."
-    ///           })
-    ///           .username("John Doe")
-    ///           .build()?;
-    /// # Ok(())}
-    /// ```
-    pub fn builder() -> ChatPluginBuilder {
-        ChatPluginBuilder::default()
+    /// This method returns an error if the configuration is invalid.
+    pub fn build(self) -> Result<ChatPlugin> {
+        Ok(ChatPlugin::from(self.internal_build()?))
     }
-}
 
-impl ChatPluginBuilder {
     /// The keyset used to connect to PubNub.
     pub fn keyset<T>(mut self, keyset: Keyset<T>) -> Self
     where
@@ -163,18 +155,43 @@ where
     pub subscribe_key: S,
 }
 
+impl ChatPlugin {
+    /// Creates a new [`ChatPluginBuilder`].
+    ///
+    /// This is used to configure the plugin.
+    /// The [`ChatPluginBuilder`] is then used to create the [`ChatPlugin`].
+    ///
+    /// # Example
+    /// ```rust
+    /// use bevy_pn_chat::{ChatPlugin, Keyset};
+    ///
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let chat = ChatPlugin::builder()
+    ///           .keyset(Keyset{
+    ///               publish_key: "pub-c-...",
+    ///               subscribe_key: "sub-c-..."
+    ///           })
+    ///           .username("John Doe")
+    ///           .build()?;
+    /// # Ok(())}
+    /// ```
+    pub fn builder() -> ChatPluginConfigBuilder {
+        ChatPluginConfigBuilder::default()
+    }
+}
+
 #[cfg(test)]
 mod should {
     use super::*;
 
     #[test]
     fn validate_if_keyset_is_empty() {
-        let chat = ChatPlugin::builder()
+        let chat = ChatPluginConfigBuilder::default()
             .keyset(Keyset {
                 publish_key: "",
                 subscribe_key: "",
             })
-            .build();
+            .internal_build();
 
         assert!(chat.is_err());
     }

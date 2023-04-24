@@ -56,10 +56,11 @@
 
 #![deny(missing_docs)]
 
-pub use builder::{ChatPlugin, Keyset};
+pub use builder::Keyset;
 pub mod builder;
 
 pub use error::BevyPNError;
 pub mod error;
 
+pub use plugin::ChatPlugin;
 pub mod plugin;
