@@ -26,7 +26,7 @@
 //!
 //! ```rust no_run
 //! use bevy::prelude::*;
-//! use bevy_pn_chat::ChatPlugin;
+//! use bevy_pn_chat::{ChatPlugin, Keyset};
 //!
 //! fn main() {
 //!    let chat = ChatPlugin::builder()
@@ -51,3 +51,11 @@
 //!
 //! This is not an official PubNub product.
 //! I created this plugin for fun and to learn more about Bevy engine.
+
+#![deny(missing_docs)]
+
+pub use error::BevyPNError;
+pub mod error;
+
+pub use plugin::{ChatPlugin, Keyset};
+pub mod plugin;
