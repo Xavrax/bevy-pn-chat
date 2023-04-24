@@ -28,18 +28,20 @@
 //! use bevy::prelude::*;
 //! use bevy_pn_chat::{ChatPlugin, Keyset};
 //!
-//! fn main() {
+//! fn main() -> Result<(), Box<dyn std::error::Error>> {
 //!    let chat = ChatPlugin::builder()
 //!                 .keyset(Keyset{
 //!                     publish_key: "pub-c-...",
 //!                     subscribe_key: "sub-c-..."
 //!                 })
-//!                 .build();
+//!                 .build()?;
 //!     
 //!    App::new()
 //!        .add_plugins(DefaultPlugins)
 //!        .add_plugin(chat)
 //!        .run();
+//!
+//!    Ok(())
 //! }
 //! ```
 //!
@@ -54,8 +56,10 @@
 
 #![deny(missing_docs)]
 
+pub use builder::{ChatPlugin, Keyset};
+pub mod builder;
+
 pub use error::BevyPNError;
 pub mod error;
 
-pub use builder::{ChatPlugin, Keyset};
-pub mod builder;
+pub mod plugin;

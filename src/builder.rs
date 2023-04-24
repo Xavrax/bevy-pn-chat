@@ -10,14 +10,15 @@
 //!
 //! ```rust
 //! use bevy_pn_chat::{ChatPlugin, Keyset};
-//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! let chat = ChatPlugin::builder()
 //!             .keyset(Keyset{
 //!                publish_key: "pub-c-...",
 //!                subscribe_key: "sub-c-..."
 //!             })
 //!             .username("John Doe")
-//!             .build();
+//!             .build()?;
+//! # Ok(())}
 //! ```
 
 use crate::error::{BevyPNError, Result};
@@ -31,14 +32,15 @@ use derive_builder::Builder;
 ///
 /// ```rust
 /// use bevy_pn_chat::{ChatPlugin, Keyset};
-///
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// let chat = ChatPlugin::builder()
-///            .keyset(Keyset{
-///            publish_key: "pub-c-...",
-///            subscribe_key: "sub-c-..."
-///            })
-///            .username("John Doe")
-///            .build();
+///             .keyset(Keyset{
+///                publish_key: "pub-c-...",
+///                subscribe_key: "sub-c-..."
+///             })
+///             .username("John Doe")
+///             .build()?;
+/// # Ok(())}
 /// ```
 #[derive(Debug, Clone, Builder)]
 #[builder(
@@ -68,13 +70,15 @@ impl ChatPlugin {
     /// ```rust
     /// use bevy_pn_chat::{ChatPlugin, Keyset};
     ///
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let chat = ChatPlugin::builder()
     ///           .keyset(Keyset{
     ///               publish_key: "pub-c-...",
     ///               subscribe_key: "sub-c-..."
     ///           })
     ///           .username("John Doe")
-    ///           .build();
+    ///           .build()?;
+    /// # Ok(())}
     /// ```
     pub fn builder() -> ChatPluginBuilder {
         ChatPluginBuilder::default()
@@ -98,50 +102,36 @@ impl ChatPluginBuilder {
     fn validate(&self) -> Result<()> {
         self.keyset
             .as_ref()
-            .ok_or(BevyPNError::Config {
-                message: "Keyset is not set".into(),
-            })
             .and_then(|keyset| {
-                (keyset.publish_key.is_empty() || keyset.subscribe_key.is_empty())
-                    .then(|| {
-                        Err(BevyPNError::Config {
-                            message: "Keyset is empty".into(),
-                        })
+                (keyset.publish_key.is_empty() || keyset.subscribe_key.is_empty()).then(|| {
+                    Err(BevyPNError::Config {
+                        message: "Keyset is empty".into(),
                     })
-                    .unwrap_or(Ok(()))
-            })?;
+                })
+            })
+            .unwrap_or(Ok(()))?;
 
         self.channel
             .as_ref()
-            .ok_or(BevyPNError::Config {
-                message: "Channel is not set".into(),
-            })
             .and_then(|channel| {
-                channel
-                    .is_empty()
-                    .then(|| {
-                        Err(BevyPNError::Config {
-                            message: "Channel is empty".into(),
-                        })
+                channel.is_empty().then(|| {
+                    Err(BevyPNError::Config {
+                        message: "Channel is empty".into(),
                     })
-                    .unwrap_or(Ok(()))
-            })?;
+                })
+            })
+            .unwrap_or(Ok(()))?;
 
         self.username
             .as_ref()
-            .ok_or(BevyPNError::Config {
-                message: "Username is not set".into(),
-            })
             .and_then(|username| {
-                username
-                    .is_empty()
-                    .then(|| {
-                        Err(BevyPNError::Config {
-                            message: "Username is empty".into(),
-                        })
+                username.is_empty().then(|| {
+                    Err(BevyPNError::Config {
+                        message: "Username is empty".into(),
                     })
-                    .unwrap_or(Ok(()))
-            })?;
+                })
+            })
+            .unwrap_or(Ok(()))?;
 
         Ok(())
     }
