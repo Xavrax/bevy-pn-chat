@@ -57,15 +57,15 @@ use derive_builder::Builder;
 )]
 pub struct ChatPluginConfig {
     #[builder(setter(custom))]
-    keyset: Keyset<String>,
+    pub(crate) keyset: Keyset<String>,
 
     /// The channel to use.
     #[builder(setter(into), default = "\"bevy-pn-chat\".into()")]
-    channel: String,
+    pub(crate) channel: String,
 
     /// The username to use.
     #[builder(setter(into), default = "\"anonymous\".into()")]
-    username: String,
+    pub(crate) username: String,
 }
 
 impl ChatPluginConfigBuilder {
@@ -75,7 +75,7 @@ impl ChatPluginConfigBuilder {
     ///
     /// This method returns an error if the configuration is invalid.
     pub fn build(self) -> Result<ChatPlugin> {
-        Ok(ChatPlugin::from(self.internal_build()?))
+        ChatPlugin::try_from(self.internal_build()?)
     }
 
     /// The keyset used to connect to PubNub.

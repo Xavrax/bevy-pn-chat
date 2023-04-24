@@ -10,6 +10,9 @@ bevy = "0.10"
 derive_builder = "0.12"
 snafu = "0.7"
 
+# TODO: wait for pubnub sdk release
+pubnub = { git = "https://github.com/pubnub/rust.git", branch = "phoenix" }
+
 [[example]]
 name = "simple"
 required-features = []

@@ -1,7 +1,11 @@
 //! This module describes how the [`ChatPlugin`] is plugged into the Bevy engine.
 
-use crate::builder::ChatPluginConfig;
+use crate::{builder::ChatPluginConfig, BevyPNError};
 use bevy::prelude::Plugin;
+use pubnub::{
+    transport::{middleware::PubNubMiddleware, TransportReqwest},
+    Keyset, PubNubClient, PubNubClientBuilder,
+};
 
 /// This struct is a plugin for Bevy engine.
 ///
@@ -32,11 +36,27 @@ use bevy::prelude::Plugin;
 pub struct ChatPlugin {
     // TODO: it has to be kept in memory because of lack of subscription implementation
     config: ChatPluginConfig,
+
+    pubnub: PubNubClient<PubNubMiddleware<TransportReqwest>>,
 }
 
-impl From<ChatPluginConfig> for ChatPlugin {
-    fn from(config: ChatPluginConfig) -> Self {
-        Self { config }
+impl TryFrom<ChatPluginConfig> for ChatPlugin {
+    type Error = BevyPNError;
+
+    fn try_from(config: ChatPluginConfig) -> Result<Self, Self::Error> {
+        let pubnub = PubNubClientBuilder::with_reqwest_transport()
+            .with_keyset(Keyset {
+                subscribe_key: config.keyset.subscribe_key.clone(),
+                publish_key: Some(config.keyset.publish_key.clone()),
+                secret_key: None,
+            })
+            .with_user_id(config.username.clone())
+            .build()
+            .map_err(|error| BevyPNError::Config {
+                message: error.to_string(),
+            })?;
+
+        Ok(Self { config, pubnub })
     }
 }
 
