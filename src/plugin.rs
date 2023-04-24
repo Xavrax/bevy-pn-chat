@@ -9,8 +9,10 @@ use bevy::prelude::Plugin;
 ///
 /// # Example
 ///
-/// ```rust
+/// ```rust no_run
+/// use bevy::prelude::{App, DefaultPlugins};
 /// use bevy_pn_chat::{ChatPlugin, Keyset};
+///
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// let chat = ChatPlugin::builder()
 ///             .keyset(Keyset{
@@ -19,9 +21,16 @@ use bevy::prelude::Plugin;
 ///             })
 ///             .username("John Doe")
 ///             .build()?;
+///
+///  App::new()
+///      .add_plugins(DefaultPlugins)
+///      .add_plugin(chat)
+///      .run();
+///
 /// # Ok(())}
 /// ```
 pub struct ChatPlugin {
+    // TODO: it has to be kept in memory because of lack of subscription implementation
     config: ChatPluginConfig,
 }
 
