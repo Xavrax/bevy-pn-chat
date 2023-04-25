@@ -1,12 +1,18 @@
+use std::future;
+
 use bevy::{
     input::keyboard::KeyboardInput,
-    prelude::{EventReader, KeyCode, Query, Res},
+    prelude::{Commands, EventReader, KeyCode, Query, Res},
+    tasks::AsyncComputeTaskPool,
     text::Text,
 };
 
-use super::{resources::PubNubClientResource, text::InputBox};
+use crate::error;
+
+use super::{resources::PubNubClientResource, tasks::PublishTask, text::InputBox};
 
 pub fn keyboard_handler(
+    mut commands: Commands,
     mut key_evr: EventReader<KeyboardInput>,
     mut input: Query<(&mut InputBox, &mut Text)>,
     pubnub: Res<PubNubClientResource>,
@@ -18,17 +24,24 @@ pub fn keyboard_handler(
         .for_each(|key| {
             match key {
                 KeyCode::Return => {
+                    let thread_pool = AsyncComputeTaskPool::get();
                     input.iter_mut().for_each(|mut input| {
                         let message = input.1.sections[0].value.clone();
                         input.1.sections[0].value.clear();
                         input.0.cursor = 0;
                         input.0.selection = None;
-                        pubnub
-                            .publish_message(message)
-                            .channel("chat")
-                            .execute_blocking()
-                            // TODO: error handling!
-                            .unwrap();
+
+                        let cloned = pubnub.clone();
+                        let task = thread_pool.spawn(async move {
+                            cloned
+                                .publish_message(message)
+                                .channel("chat")
+                                .execute_blocking()
+                                .map(|_| ())
+                                .map_err(Into::into)
+                        });
+
+                        commands.spawn(PublishTask(task));
                     });
                     None
                 }

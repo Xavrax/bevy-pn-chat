@@ -13,11 +13,13 @@ use pubnub::{
 
 use self::{
     resources::{InputBoxStyle, PubNubClientResource},
+    tasks::tasks_handler,
     text::InputBox,
 };
 
 mod keyboard;
 mod resources;
+mod tasks;
 mod text;
 
 /// This struct is a plugin for Bevy engine.
@@ -78,7 +80,8 @@ impl Plugin for ChatPlugin {
         app.insert_resource(InputBoxStyle(self.config.input_style.clone()))
             .insert_resource(PubNubClientResource(self.pubnub.clone()))
             .add_startup_system(plugin_startup)
-            .add_system(keyboard_handler);
+            .add_system(keyboard_handler)
+            .add_system(tasks_handler);
     }
 }
 
