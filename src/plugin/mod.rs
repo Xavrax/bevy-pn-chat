@@ -1,7 +1,10 @@
 //! This module describes how the [`ChatPlugin`] is plugged into the Bevy engine.
 
 use crate::{builder::ChatPluginConfig, BevyPNError};
-use bevy::prelude::Plugin;
+use bevy::{
+    input::keyboard::KeyboardInput,
+    prelude::{EventReader, Plugin},
+};
 use pubnub::{
     transport::{middleware::PubNubMiddleware, TransportReqwest},
     Keyset, PubNubClient, PubNubClientBuilder,
@@ -62,6 +65,16 @@ impl TryFrom<ChatPluginConfig> for ChatPlugin {
 
 impl Plugin for ChatPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        todo!()
+        app.add_system(keyboard_handler);
+    }
+}
+
+fn keyboard_handler(mut key_evr: EventReader<KeyboardInput>) {
+    for key in key_evr.iter() {
+        if key.state.is_pressed() {
+            println!("{:#?}", key.key_code.unwrap());
+
+            format!("{:#?}", key.key_code.unwrap());
+        }
     }
 }
