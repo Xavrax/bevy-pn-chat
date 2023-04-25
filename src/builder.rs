@@ -9,7 +9,7 @@
 //! # Example
 //!
 //! ```rust
-//! use bevy_pn_chat::{ChatPlugin, Keyset};
+//! use bevy_pn_chat::{ChatPlugin, Keyset, TextStyle, Color};
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! let chat = ChatPlugin::builder()
 //!             .keyset(Keyset{
@@ -17,14 +17,29 @@
 //!                subscribe_key: "sub-c-..."
 //!             })
 //!             .username("John Doe")
+//!             .channel("my-channel")
+//!             .input_style(TextStyle {
+//!                 font_path: "fonts/FiraSans-Bold.ttf".into(),
+//!                 font_size: 20.0,
+//!                 color: Color::WHITE,
+//!             })
+//!             .message_style(TextStyle {
+//!                 font_path: "fonts/FiraSans-Bold.ttf".into(),
+//!                 font_size: 20.0,
+//!                 color: Color::WHITE,
+//!             })
+//!             .max_messages(10)
 //!             .build()?;
 //! # Ok(())}
 //! ```
+
+use std::path::PathBuf;
 
 use crate::{
     error::{BevyPNError, Result},
     ChatPlugin,
 };
+use bevy::prelude::Color;
 use derive_builder::Builder;
 
 /// This struct is a config for [`ChatPlugin`].
@@ -45,6 +60,9 @@ use derive_builder::Builder;
 ///             .build()?;
 /// # Ok(())}
 /// ```
+///
+/// More examples can be found in the [`plugin`] module documentation
+/// or in the [examples](https://github.com/xavrax/bevy_pn_chat.git) directory.
 #[derive(Debug, Clone, Builder)]
 #[builder(
     pattern = "owned",
@@ -66,6 +84,50 @@ pub struct ChatPluginConfig {
     /// The username to use.
     #[builder(setter(into), default = "\"anonymous\".into()")]
     pub(crate) username: String,
+
+    /// The maximum number of messages to display.
+    /// If the number of messages exceeds this value, the oldest messages will be removed.
+    /// If set to `None`, the number of messages is unlimited.
+    /// Defaults to `None`.
+    ///
+    /// # Warning
+    ///
+    /// If you set this value to `None`, the memory usage will increase over time.
+    #[builder(setter(strip_option), default)]
+    pub(crate) max_messages: Option<usize>,
+
+    /// Text style for the input box.
+    /// Defaults to `TextStyle::default()`.
+    ///
+    /// It wraps directly into a [`TextStyle`].
+    /// See bevy [`TextStyle`] for more information.
+    ///
+    /// [`TextStyle`]: https://docs.rs/bevy/0.5.0/bevy/text/struct.TextStyle.html
+    #[builder(default)]
+    pub(crate) input_style: TextStyle,
+
+    /// Text style for the messages.
+    /// Defaults to `TextStyle::default()`.
+    ///
+    /// It wraps directly into a [`TextStyle`].
+    /// See bevy [`TextStyle`] for more information.
+    ///
+    /// [`TextStyle`]: https://docs.rs/bevy/0.5.0/bevy/text/struct.TextStyle.html
+    #[builder(default)]
+    pub(crate) message_style: TextStyle,
+
+    /// Message format.
+    /// Defaults to `"{username}: {message}"`.
+    /// The following placeholders are available:
+    /// - `{username}`: the username of the sender
+    /// - `{message}`: the message
+    /// - `{time}`: the time the message was sent
+    /// - `{date}`: the date the message was sent
+    /// - `{datetime}`: the date and time the message was sent
+    /// - `{timestamp}`: the timestamp the message was sent
+    /// - `{channel}`: the channel the message was sent to
+    #[builder(setter(into), default = "\"{username}: {message}\".into()")]
+    pub(crate) message_format: String,
 }
 
 impl ChatPluginConfigBuilder {
@@ -125,6 +187,17 @@ impl ChatPluginConfigBuilder {
             })
             .unwrap_or(Ok(()))?;
 
+        self.message_format
+            .as_ref()
+            .and_then(|message_format| {
+                message_format.is_empty().then(|| {
+                    Err(BevyPNError::Config {
+                        message: "Message format is empty".into(),
+                    })
+                })
+            })
+            .unwrap_or(Ok(()))?;
+
         Ok(())
     }
 }
@@ -153,6 +226,46 @@ where
 
     /// The subscribe key for the PubNub infrastructure.
     pub subscribe_key: S,
+}
+
+/// This struct is used to configure the text style for the [`ChatPlugin`].
+/// It wraps directly into a [`TextStyle`].
+///
+/// See bevy [`TextStyle`] for more information.
+/// [`TextStyle`]: https://docs.rs/bevy/0.5.0/bevy/text/struct.TextStyle.html
+#[derive(Debug, Clone, PartialEq)]
+pub struct TextStyle {
+    /// The font path to use.
+    ///
+    /// This is a path to a font file.
+    /// It uses Bevy's asset management system to load the font.
+    ///
+    /// Defaults to an empty path.
+    ///
+    /// # Warning
+    ///
+    /// If not path provided, then your messages will not be displayed.
+    pub font_path: PathBuf,
+
+    /// The font size to use.
+    pub font_size: f32,
+
+    /// The color to use.
+    ///
+    /// It uses Bevy's [`Color`] struct.
+    ///
+    /// [`Color`]: https://docs.rs/bevy/0.5.0/bevy/color/struct.Color.html
+    pub color: Color,
+}
+
+impl Default for TextStyle {
+    fn default() -> Self {
+        Self {
+            font_path: "".into(),
+            font_size: 20.0,
+            color: Color::WHITE,
+        }
+    }
 }
 
 impl ChatPlugin {
@@ -191,6 +304,33 @@ mod should {
                 publish_key: "",
                 subscribe_key: "",
             })
+            .internal_build();
+
+        assert!(chat.is_err());
+    }
+
+    #[test]
+    fn validate_if_channel_is_empty() {
+        let chat = ChatPluginConfigBuilder::default()
+            .channel("")
+            .internal_build();
+
+        assert!(chat.is_err());
+    }
+
+    #[test]
+    fn validate_if_username_is_empty() {
+        let chat = ChatPluginConfigBuilder::default()
+            .username("")
+            .internal_build();
+
+        assert!(chat.is_err());
+    }
+
+    #[test]
+    fn validate_if_message_format_is_empty() {
+        let chat = ChatPluginConfigBuilder::default()
+            .message_format("")
             .internal_build();
 
         assert!(chat.is_err());

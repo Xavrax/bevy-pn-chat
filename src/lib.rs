@@ -56,7 +56,8 @@
 
 #![deny(missing_docs)]
 
-pub use builder::Keyset;
+pub use bevy::prelude::Color;
+pub use builder::{Keyset, TextStyle};
 pub mod builder;
 
 pub use error::BevyPNError;
