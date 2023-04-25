@@ -14,10 +14,21 @@ pub fn keyboard_handler(
         .iter()
         .filter(|key| key.state.is_pressed())
         .filter_map(|key| key.key_code)
-        .filter_map(characters_filter)
         .for_each(|key| {
-            input.iter_mut().for_each(|mut input| {
-                input.1.sections[0].value.push(key);
+            match key {
+                KeyCode::Return => None,
+                KeyCode::Back => {
+                    input.iter_mut().for_each(|mut input| {
+                        input.1.sections[0].value.pop();
+                    });
+                    None
+                }
+                _ => characters_filter(key),
+            }
+            .map(|character| {
+                input.iter_mut().for_each(|mut input| {
+                    input.1.sections[0].value.push(character);
+                });
             });
         });
 }
