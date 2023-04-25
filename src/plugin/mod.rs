@@ -3,7 +3,7 @@
 use crate::{builder::ChatPluginConfig, BevyPNError};
 use bevy::{
     prelude::{AssetServer, Commands, Plugin, Res, Transform},
-    text::TextStyle,
+    text::{Text2dBundle, TextStyle},
 };
 use keyboard::keyboard_handler;
 use pubnub::{
@@ -85,9 +85,20 @@ fn plugin_startup(
 ) {
     let font = asset_server.load(style.font_path.to_str().unwrap_or(""));
 
-    commands.spawn(InputBox::new(TextStyle {
-        font,
-        font_size: style.font_size,
-        color: style.color,
-    }));
+    commands.spawn((
+        InputBox::default(),
+        Text2dBundle {
+            text: bevy::text::Text::from_section(
+                "",
+                TextStyle {
+                    font: font.clone(),
+                    font_size: style.font_size,
+                    color: style.color,
+                },
+            )
+            .with_alignment(bevy::text::TextAlignment::Left),
+            transform: Transform::from_xyz(30.0, 30.0, 0.0),
+            ..Default::default()
+        },
+    ));
 }
