@@ -1,14 +1,15 @@
 use bevy::{
-    prelude::{Commands, Component, Entity, Query, Res},
+    prelude::{AssetServer, Commands, Component, Entity, Query, Res, Transform},
     tasks::{AsyncComputeTaskPool, Task},
+    text::{Text2dBounds, Text2dBundle, TextStyle},
 };
 use futures_lite::future;
 
 use crate::error::Result;
 
 use super::{
-    messages::{subscribe, SubscriptionResult},
-    resources::PubNubSubscribeResource,
+    messages::{subscribe, ChatMessage, SubscriptionResult},
+    resources::{ChatMessageStyle, PubNubSubscribeResource},
 };
 
 #[derive(Component)]
@@ -22,6 +23,8 @@ pub fn tasks_handler(
     subscription_info: Res<PubNubSubscribeResource>,
     mut publish_tasks: Query<(Entity, &mut PublishTask)>,
     mut subscribe_tasks: Query<(Entity, &mut SubscribeTask)>,
+    asset_server: Res<AssetServer>,
+    message_style: Res<ChatMessageStyle>,
 ) {
     publish_tasks.iter_mut().for_each(|(entity, mut task)| {
         future::block_on(future::poll_once(&mut task.0)).map(|res| {
@@ -44,7 +47,28 @@ pub fn tasks_handler(
                     let thread_pool = AsyncComputeTaskPool::get();
                     let task = thread_pool
                         .spawn(async move { subscribe(subscribe_key, channel, tt, tr, user_id) });
+
                     commands.spawn(SubscribeTask(task));
+
+                    let font = asset_server.load(message_style.font_path.to_str().unwrap_or(""));
+                    result.messages.iter().for_each(|message| {
+                        commands.spawn((
+                            ChatMessage,
+                            Text2dBundle {
+                                text: bevy::text::Text::from_section(
+                                    message.payload.as_str(),
+                                    TextStyle {
+                                        font: font.clone(),
+                                        font_size: message_style.font_size,
+                                        color: message_style.color,
+                                    },
+                                )
+                                .with_alignment(bevy::text::TextAlignment::Left),
+                                transform: Transform::from_xyz(30.0, 70.0, 0.0),
+                                ..Default::default()
+                            },
+                        ));
+                    });
                 })
                 .ok();
             commands.entity(entity).despawn();

@@ -1,5 +1,5 @@
 use bevy::{
-    prelude::{Commands, Res},
+    prelude::{Commands, Component, Res},
     tasks::AsyncComputeTaskPool,
 };
 use pubnub::{
@@ -12,6 +12,9 @@ use serde_json::Value;
 use crate::{error::Result, BevyPNError};
 
 use super::{resources::PubNubSubscribeResource, tasks::SubscribeTask};
+
+#[derive(Component)]
+pub struct ChatMessage;
 
 pub fn message_handler(mut commands: Commands, subscription_info: Res<PubNubSubscribeResource>) {
     let thread_pool = AsyncComputeTaskPool::get();

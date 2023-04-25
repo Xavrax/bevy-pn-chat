@@ -18,6 +18,17 @@ impl Deref for InputBoxStyle {
     }
 }
 
+#[derive(Debug, Clone, Resource)]
+pub struct ChatMessageStyle(pub TextStyle);
+
+impl Deref for ChatMessageStyle {
+    type Target = TextStyle;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 #[derive(Clone, Resource)]
 pub struct PubNubClientResource(pub PubNubClient<PubNubMiddleware<TransportReqwest>>);
 

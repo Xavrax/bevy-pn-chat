@@ -13,7 +13,10 @@ use pubnub::{
 
 use self::{
     messages::message_handler,
-    resources::{ChannelResource, InputBoxStyle, PubNubClientResource, PubNubSubscribeResource},
+    resources::{
+        ChannelResource, ChatMessageStyle, InputBoxStyle, PubNubClientResource,
+        PubNubSubscribeResource,
+    },
     tasks::tasks_handler,
     text::InputBox,
 };
@@ -80,6 +83,7 @@ impl TryFrom<ChatPluginConfig> for ChatPlugin {
 impl Plugin for ChatPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.insert_resource(InputBoxStyle(self.config.input_style.clone()))
+            .insert_resource(ChatMessageStyle(self.config.message_style.clone()))
             .insert_resource(PubNubClientResource(self.pubnub.clone()))
             .insert_resource(PubNubSubscribeResource {
                 subscribe_key: self.config.keyset.subscribe_key.clone(),
