@@ -5,10 +5,14 @@ use bevy::{
 use bevy_pn_chat::{ChatPlugin, Keyset, TextStyle};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let publish_key = std::env::var("PUBNUB_PUBLISH_KEY").expect("PUB_KEY env variable is not set");
+    let subscribe_key =
+        std::env::var("PUBNUB_SUBSCRIBE_KEY").expect("SUB_KEY env variable is not set");
+
     let chat = ChatPlugin::builder()
         .keyset(Keyset {
-            publish_key: "pub-c-...",
-            subscribe_key: "sub-c-...",
+            publish_key,
+            subscribe_key,
         })
         .username("John Doe")
         .input_style(TextStyle {
