@@ -1,12 +1,7 @@
 use bevy::{
     input::keyboard::KeyboardInput,
-    prelude::{EventReader, KeyCode, Resource},
+    prelude::{EventReader, KeyCode},
 };
-
-#[derive(Resource)]
-struct KeyCodeBuffer {
-    key_codes: Vec<KeyCode>,
-}
 
 pub fn keyboard_handler(mut key_evr: EventReader<KeyboardInput>) {
     key_evr
@@ -15,9 +10,7 @@ pub fn keyboard_handler(mut key_evr: EventReader<KeyboardInput>) {
         .filter_map(|key| key.key_code)
         .filter_map(characters_filter)
         .for_each(|key| {
-            println!("{:#?}", key);
-
-            format!("{:#?}", key);
+            println!("Key pressed: {}", key);
         });
 }
 
@@ -26,9 +19,13 @@ const SERIALIZED_DIGITS_POSITION: usize = 4;
 const SERIALIZED_NUMPAD_POSITION: usize = 7;
 
 fn characters_filter(key_code: KeyCode) -> Option<char> {
-    serde_json::to_string(&key_code)
-        .ok()
-        .and_then(|serialized| letter_filter(&serialized).or_else(|| digits_filter(&serialized)))
+    special_characters_filter(&key_code).or_else(|| {
+        serde_json::to_string(&key_code)
+            .ok()
+            .and_then(|serialized| {
+                letter_filter(&serialized).or_else(|| digits_filter(&serialized))
+            })
+    })
 }
 
 fn letter_filter(serialized: &String) -> Option<char> {
@@ -48,6 +45,24 @@ fn digits_filter(serialized: &String) -> Option<char> {
                 .then(|| serialized.chars().nth(SERIALIZED_NUMPAD_POSITION))
                 .flatten()
         })
+}
+
+fn special_characters_filter(key_code: &KeyCode) -> Option<char> {
+    match key_code {
+        KeyCode::Space => Some(' '),
+        KeyCode::Comma => Some(','),
+        KeyCode::Period => Some('.'),
+        KeyCode::Slash => Some('/'),
+        KeyCode::Semicolon => Some(';'),
+        KeyCode::Apostrophe => Some('\''),
+        KeyCode::Backslash => Some('\\'),
+        KeyCode::LBracket => Some('['),
+        KeyCode::RBracket => Some(']'),
+        KeyCode::Grave => Some('`'),
+        KeyCode::Minus => Some('-'),
+        KeyCode::Equals => Some('='),
+        _ => None,
+    }
 }
 
 #[cfg(test)]
