@@ -28,3 +28,13 @@ impl Deref for PubNubClientResource {
         &self.0
     }
 }
+
+// TODO: it has to be kept in memory because of lack of subscription implementation
+#[derive(Clone, Resource)]
+pub struct PubNubSubscribeResource {
+    pub tt: String,
+    pub tr: String,
+    pub subscribe_key: String,
+    pub channel: String,
+    pub user_id: String,
+}

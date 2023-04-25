@@ -21,6 +21,13 @@ pub enum BevyPNError {
         /// The PubNub error.
         inner: PubNubError,
     },
+
+    /// This error is returned when the empty body is received.
+    #[snafu(display("Empty body received on {on}!"))]
+    EmptyBody {
+        /// Where the empty body was received.
+        on: String,
+    },
 }
 
 impl From<derive_builder::UninitializedFieldError> for BevyPNError {

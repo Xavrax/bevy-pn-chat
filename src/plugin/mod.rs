@@ -12,12 +12,14 @@ use pubnub::{
 };
 
 use self::{
-    resources::{InputBoxStyle, PubNubClientResource},
+    messages::message_handler,
+    resources::{InputBoxStyle, PubNubClientResource, PubNubSubscribeResource},
     tasks::tasks_handler,
     text::InputBox,
 };
 
 mod keyboard;
+mod messages;
 mod resources;
 mod tasks;
 mod text;
@@ -79,9 +81,17 @@ impl Plugin for ChatPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.insert_resource(InputBoxStyle(self.config.input_style.clone()))
             .insert_resource(PubNubClientResource(self.pubnub.clone()))
+            .insert_resource(PubNubSubscribeResource {
+                subscribe_key: self.config.keyset.subscribe_key.clone(),
+                channel: self.config.channel.clone(),
+                tt: "0".into(),
+                tr: "0".into(),
+                user_id: self.config.username.clone(),
+            })
             .add_startup_system(plugin_startup)
             .add_system(keyboard_handler)
-            .add_system(tasks_handler);
+            .add_system(tasks_handler)
+            .add_startup_system(message_handler);
     }
 }
 
