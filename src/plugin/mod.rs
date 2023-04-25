@@ -5,10 +5,13 @@ use bevy::{
     input::keyboard::KeyboardInput,
     prelude::{EventReader, Plugin},
 };
+use keyboard::keyboard_handler;
 use pubnub::{
     transport::{middleware::PubNubMiddleware, TransportReqwest},
     Keyset, PubNubClient, PubNubClientBuilder,
 };
+
+mod keyboard;
 
 /// This struct is a plugin for Bevy engine.
 ///
@@ -66,15 +69,5 @@ impl TryFrom<ChatPluginConfig> for ChatPlugin {
 impl Plugin for ChatPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_system(keyboard_handler);
-    }
-}
-
-fn keyboard_handler(mut key_evr: EventReader<KeyboardInput>) {
-    for key in key_evr.iter() {
-        if key.state.is_pressed() {
-            println!("{:#?}", key.key_code.unwrap());
-
-            format!("{:#?}", key.key_code.unwrap());
-        }
     }
 }
