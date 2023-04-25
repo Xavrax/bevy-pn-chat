@@ -38,3 +38,14 @@ pub struct PubNubSubscribeResource {
     pub channel: String,
     pub user_id: String,
 }
+
+#[derive(Resource)]
+pub struct ChannelResource(pub String);
+
+impl Deref for ChannelResource {
+    type Target = String;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}

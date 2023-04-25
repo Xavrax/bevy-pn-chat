@@ -9,13 +9,18 @@ use bevy::{
 
 use crate::error;
 
-use super::{resources::PubNubClientResource, tasks::PublishTask, text::InputBox};
+use super::{
+    resources::{ChannelResource, PubNubClientResource},
+    tasks::PublishTask,
+    text::InputBox,
+};
 
 pub fn keyboard_handler(
     mut commands: Commands,
     mut key_evr: EventReader<KeyboardInput>,
     mut input: Query<(&mut InputBox, &mut Text)>,
     pubnub: Res<PubNubClientResource>,
+    channel: Res<ChannelResource>,
 ) {
     key_evr
         .iter()
@@ -31,11 +36,12 @@ pub fn keyboard_handler(
                         input.0.cursor = 0;
                         input.0.selection = None;
 
-                        let cloned = pubnub.clone();
+                        let pubnub = pubnub.clone();
+                        let channel = channel.clone();
                         let task = thread_pool.spawn(async move {
-                            cloned
+                            pubnub
                                 .publish_message(message)
-                                .channel("chat")
+                                .channel(channel)
                                 .execute_blocking()
                                 .map(|_| ())
                                 .map_err(Into::into)

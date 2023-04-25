@@ -28,6 +28,13 @@ pub enum BevyPNError {
         /// Where the empty body was received.
         on: String,
     },
+
+    /// This error is returned when the deserialize error occurs.
+    #[snafu(display("Deserialize error: {inner}!"))]
+    Deserialize {
+        /// The deserialize error.
+        inner: serde_json::Error,
+    },
 }
 
 impl From<derive_builder::UninitializedFieldError> for BevyPNError {
@@ -41,5 +48,11 @@ impl From<derive_builder::UninitializedFieldError> for BevyPNError {
 impl From<PubNubError> for BevyPNError {
     fn from(value: PubNubError) -> Self {
         BevyPNError::PubNub { inner: value }
+    }
+}
+
+impl From<serde_json::Error> for BevyPNError {
+    fn from(value: serde_json::Error) -> Self {
+        BevyPNError::Deserialize { inner: value }
     }
 }

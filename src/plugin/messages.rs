@@ -6,6 +6,7 @@ use pubnub::{
     core::{blocking::Transport, TransportMethod, TransportRequest},
     transport::reqwest::blocking::TransportReqwest,
 };
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::{error::Result, BevyPNError};
@@ -32,7 +33,7 @@ pub fn subscribe(
     tt: String,
     tr: String,
     user_id: String,
-) -> Result<()> {
+) -> Result<SubscriptionResult> {
     let transport = TransportReqwest::new();
 
     let request = TransportRequest {
@@ -56,7 +57,35 @@ pub fn subscribe(
             .ok_or_else(|| BevyPNError::EmptyBody {
                 on: "Subscribe".into(),
             })
-            .map(|body| serde_json::from_slice::<Value>(&body))
-            .map(|body| println!("{:?}", body))
+            .and_then(|body| {
+                serde_json::from_slice::<SubscriptionResult>(&body).map_err(Into::into)
+            })
     })
+}
+
+#[derive(Debug, Deserialize)]
+pub struct SubscriptionResult {
+    #[serde(rename = "t")]
+    pub message_info: SubscriptionInfo,
+
+    #[serde(rename = "m")]
+    pub messages: Vec<Message>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct SubscriptionInfo {
+    #[serde(rename = "t")]
+    pub tt: String,
+
+    #[serde(rename = "r")]
+    pub tr: i32,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Message {
+    #[serde(rename = "c")]
+    pub channel: String,
+
+    #[serde(rename = "d")]
+    pub payload: String,
 }
