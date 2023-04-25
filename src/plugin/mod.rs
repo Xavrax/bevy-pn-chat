@@ -12,6 +12,7 @@ use pubnub::{
 };
 
 mod keyboard;
+mod text;
 
 /// This struct is a plugin for Bevy engine.
 ///

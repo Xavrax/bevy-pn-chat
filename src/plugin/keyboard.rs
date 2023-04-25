@@ -71,12 +71,31 @@ mod should {
 
     use test_case::test_case;
 
-    #[test_case(KeyCode::A => Some('a'))]
-    #[test_case(KeyCode::B => Some('b'))]
-    #[test_case(KeyCode::C => Some('c'))]
+    #[test_case(KeyCode::A => Some('A'))]
+    #[test_case(KeyCode::B => Some('B'))]
+    #[test_case(KeyCode::C => Some('C'))]
     #[test_case(KeyCode::F1 => None)]
     #[test_case(KeyCode::F2 => None)]
     #[test_case(KeyCode::Left => None)]
+    #[test_case(KeyCode::Right => None)]
+    #[test_case(KeyCode::Key1 => Some('1'))]
+    #[test_case(KeyCode::Key2 => Some('2'))]
+    #[test_case(KeyCode::Key3 => Some('3'))]
+    #[test_case(KeyCode::Numpad1 => Some('1'))]
+    #[test_case(KeyCode::Numpad2 => Some('2'))]
+    #[test_case(KeyCode::Numpad3 => Some('3'))]
+    #[test_case(KeyCode::Space => Some(' '))]
+    #[test_case(KeyCode::Comma => Some(','))]
+    #[test_case(KeyCode::Period => Some('.'))]
+    #[test_case(KeyCode::Slash => Some('/'))]
+    #[test_case(KeyCode::Semicolon => Some(';'))]
+    #[test_case(KeyCode::Apostrophe => Some('\''))]
+    #[test_case(KeyCode::Backslash => Some('\\'))]
+    #[test_case(KeyCode::LBracket => Some('['))]
+    #[test_case(KeyCode::RBracket => Some(']'))]
+    #[test_case(KeyCode::Grave => Some('`'))]
+    #[test_case(KeyCode::Minus => Some('-'))]
+    #[test_case(KeyCode::Equals => Some('='))]
     fn filter_not_characters_codes(key_code: KeyCode) -> Option<char> {
         characters_filter(key_code)
     }
