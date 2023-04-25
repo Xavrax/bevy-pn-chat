@@ -2,8 +2,8 @@
 
 use crate::{builder::ChatPluginConfig, BevyPNError};
 use bevy::{
-    input::keyboard::KeyboardInput,
-    prelude::{EventReader, Plugin},
+    prelude::{AssetServer, Commands, Plugin, Res, Transform},
+    text::TextStyle,
 };
 use keyboard::keyboard_handler;
 use pubnub::{
@@ -11,7 +11,10 @@ use pubnub::{
     Keyset, PubNubClient, PubNubClientBuilder,
 };
 
+use self::{resources::InputBoxStyle, text::InputBox};
+
 mod keyboard;
+mod resources;
 mod text;
 
 /// This struct is a plugin for Bevy engine.
@@ -69,6 +72,22 @@ impl TryFrom<ChatPluginConfig> for ChatPlugin {
 
 impl Plugin for ChatPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_system(keyboard_handler);
+        app.insert_resource(InputBoxStyle(self.config.input_style.clone()))
+            .add_startup_system(plugin_startup)
+            .add_system(keyboard_handler);
     }
+}
+
+fn plugin_startup(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    style: Res<InputBoxStyle>,
+) {
+    let font = asset_server.load(style.font_path.to_str().unwrap_or(""));
+
+    commands.spawn(InputBox::new(TextStyle {
+        font,
+        font_size: style.font_size,
+        color: style.color,
+    }));
 }

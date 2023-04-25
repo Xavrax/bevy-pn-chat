@@ -1,35 +1,20 @@
-use bevy::{prelude::Component, text::Text};
-
+use bevy::{
+    prelude::{Component, Resource},
+    text::{Text, TextAlignment, TextStyle},
+};
 #[derive(Component)]
 pub struct InputBox {
-    text: Text,
-    cursor: usize,
-    selection: Option<usize>,
+    pub text: Text,
+    pub cursor: usize,
+    pub selection: Option<usize>,
 }
 
-//impl InputBox {
-//    pub fn new() -> Self {
-//        Self::default()
-//    }
-//}
-
-//impl Default for InputBox {
-//    fn default() -> Self {
-//        Self {
-//            text: Text::from_section(
-//                "",
-//                TextStyle {
-//                    font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-//                    font_size: 40.0,
-//                    color: Color::WHITE,
-//                },
-//            )
-//            .with_alignment(TextAlignment {
-//                vertical: VerticalAlign::Center,
-//                horizontal: HorizontalAlign::Left,
-//            }),
-//            cursor: 0,
-//            selection: None,
-//        }
-//    }
-//}
+impl InputBox {
+    pub fn new(style: TextStyle) -> Self {
+        Self {
+            text: Text::from_section("", style).with_alignment(TextAlignment::Left),
+            cursor: 0,
+            selection: None,
+        }
+    }
+}

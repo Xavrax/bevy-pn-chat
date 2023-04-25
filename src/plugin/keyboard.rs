@@ -1,16 +1,21 @@
 use bevy::{
     input::keyboard::KeyboardInput,
-    prelude::{EventReader, KeyCode},
+    prelude::{EventReader, KeyCode, Query},
 };
 
-pub fn keyboard_handler(mut key_evr: EventReader<KeyboardInput>) {
+use super::text::InputBox;
+
+pub fn keyboard_handler(mut key_evr: EventReader<KeyboardInput>, mut input: Query<&mut InputBox>) {
     key_evr
         .iter()
         .filter(|key| key.state.is_pressed())
         .filter_map(|key| key.key_code)
         .filter_map(characters_filter)
         .for_each(|key| {
-            println!("Key pressed: {}", key);
+            input.iter_mut().for_each(|mut input| {
+                // TODO: multiple input boxes
+                input.text.sections[0].value.push(key);
+            });
         });
 }
 
