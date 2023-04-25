@@ -1,14 +1,15 @@
 use bevy::{
     input::keyboard::KeyboardInput,
-    prelude::{EventReader, KeyCode, Query},
+    prelude::{EventReader, KeyCode, Query, Res},
     text::Text,
 };
 
-use super::text::InputBox;
+use super::{resources::PubNubClientResource, text::InputBox};
 
 pub fn keyboard_handler(
     mut key_evr: EventReader<KeyboardInput>,
     mut input: Query<(&mut InputBox, &mut Text)>,
+    pubnub: Res<PubNubClientResource>,
 ) {
     key_evr
         .iter()
@@ -16,7 +17,21 @@ pub fn keyboard_handler(
         .filter_map(|key| key.key_code)
         .for_each(|key| {
             match key {
-                KeyCode::Return => None,
+                KeyCode::Return => {
+                    input.iter_mut().for_each(|mut input| {
+                        let message = input.1.sections[0].value.clone();
+                        input.1.sections[0].value.clear();
+                        input.0.cursor = 0;
+                        input.0.selection = None;
+                        pubnub
+                            .publish_message(message)
+                            .channel("chat")
+                            .execute_blocking()
+                            // TODO: error handling!
+                            .unwrap();
+                    });
+                    None
+                }
                 KeyCode::Back => {
                     input.iter_mut().for_each(|mut input| {
                         input.1.sections[0].value.pop();

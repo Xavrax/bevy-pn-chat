@@ -7,11 +7,14 @@ use bevy::{
 };
 use keyboard::keyboard_handler;
 use pubnub::{
-    transport::{middleware::PubNubMiddleware, TransportReqwest},
+    transport::middleware::PubNubMiddleware, transport::reqwest::blocking::TransportReqwest,
     Keyset, PubNubClient, PubNubClientBuilder,
 };
 
-use self::{resources::InputBoxStyle, text::InputBox};
+use self::{
+    resources::{InputBoxStyle, PubNubClientResource},
+    text::InputBox,
+};
 
 mod keyboard;
 mod resources;
@@ -54,7 +57,7 @@ impl TryFrom<ChatPluginConfig> for ChatPlugin {
     type Error = BevyPNError;
 
     fn try_from(config: ChatPluginConfig) -> Result<Self, Self::Error> {
-        let pubnub = PubNubClientBuilder::with_reqwest_transport()
+        let pubnub = PubNubClientBuilder::with_reqwest_blocking_transport()
             .with_keyset(Keyset {
                 subscribe_key: config.keyset.subscribe_key.clone(),
                 publish_key: Some(config.keyset.publish_key.clone()),
@@ -73,6 +76,7 @@ impl TryFrom<ChatPluginConfig> for ChatPlugin {
 impl Plugin for ChatPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.insert_resource(InputBoxStyle(self.config.input_style.clone()))
+            .insert_resource(PubNubClientResource(self.pubnub.clone()))
             .add_startup_system(plugin_startup)
             .add_system(keyboard_handler);
     }
