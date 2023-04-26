@@ -39,7 +39,7 @@ use crate::{
     error::{BevyPNError, Result},
     ChatPlugin,
 };
-use bevy::prelude::Color;
+use bevy::prelude::{Color, Transform};
 use derive_builder::Builder;
 
 /// This struct is a config for [`ChatPlugin`].
@@ -128,6 +128,26 @@ pub struct ChatPluginConfig {
     /// - `{channel}`: the channel the message was sent to
     #[builder(setter(into), default = "\"{username}: {message}\".into()")]
     pub(crate) message_format: String,
+
+    /// Transform of the chat window.
+    /// Defaults to `Transform::from_xyz(0.0, 0.0, 0.0)`.
+    ///
+    /// See bevy [`Transform`] for more information.
+    ///
+    /// [`Transform`]: https://docs.rs/bevy/0.5.0/bevy/prelude/struct.Transform.html
+    #[builder(default)]
+    pub(crate) transform: Transform,
+
+    /// The bounds of the chat window.
+    /// Defaults to `(500.0, 500.0)`.
+    /// The first value is the width, the second value is the height.
+    /// The width and height must be greater than 0.
+    ///
+    /// # Warning
+    ///
+    /// If the width or height is set to `0`, the width or height will be set to `1`.
+    #[builder(default = "(500.0, 500.0)")]
+    pub(crate) bounds: (f32, f32),
 }
 
 impl ChatPluginConfigBuilder {

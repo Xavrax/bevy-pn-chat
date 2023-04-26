@@ -91,4 +91,7 @@ pub struct Message {
 
     #[serde(rename = "d")]
     pub payload: String,
+
+    #[serde(rename = "i")]
+    pub user_id: String,
 }

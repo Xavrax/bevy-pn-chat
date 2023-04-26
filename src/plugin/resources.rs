@@ -1,7 +1,7 @@
 use std::ops::Deref;
 
 use crate::TextStyle;
-use bevy::prelude::Resource;
+use bevy::prelude::{Rect, Resource, Transform};
 use pubnub::{
     transport::{middleware::PubNubMiddleware, reqwest::blocking::TransportReqwest},
     PubNubClient,
@@ -55,6 +55,39 @@ pub struct ChannelResource(pub String);
 
 impl Deref for ChannelResource {
     type Target = String;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+#[derive(Debug, Clone, Resource)]
+pub struct MessageFormat(pub String);
+
+impl Deref for MessageFormat {
+    type Target = String;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+#[derive(Debug, Clone, Resource)]
+pub struct ChatTransform(pub Transform);
+
+impl Deref for ChatTransform {
+    type Target = Transform;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+#[derive(Debug, Clone, Resource)]
+pub struct ChatBounds(pub Rect);
+
+impl Deref for ChatBounds {
+    type Target = Rect;
 
     fn deref(&self) -> &Self::Target {
         &self.0

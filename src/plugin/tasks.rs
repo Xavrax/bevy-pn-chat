@@ -9,7 +9,7 @@ use crate::error::Result;
 
 use super::{
     messages::{subscribe, ChatMessage, SubscriptionResult},
-    resources::{ChatMessageStyle, PubNubSubscribeResource},
+    resources::{ChatMessageStyle, MessageFormat, PubNubSubscribeResource},
 };
 
 #[derive(Component)]
@@ -25,6 +25,7 @@ pub fn tasks_handler(
     mut subscribe_tasks: Query<(Entity, &mut SubscribeTask)>,
     asset_server: Res<AssetServer>,
     message_style: Res<ChatMessageStyle>,
+    message_format: Res<MessageFormat>,
 ) {
     publish_tasks.iter_mut().for_each(|(entity, mut task)| {
         future::block_on(future::poll_once(&mut task.0)).map(|res| {
@@ -56,7 +57,11 @@ pub fn tasks_handler(
                             ChatMessage,
                             Text2dBundle {
                                 text: bevy::text::Text::from_section(
-                                    message.payload.as_str(),
+                                    message_format
+                                        .clone()
+                                        .replace("{username}", &message.user_id)
+                                        .replace("{message}", &message.payload)
+                                        .replace("{channel}", &message.channel),
                                     TextStyle {
                                         font: font.clone(),
                                         font_size: message_style.font_size,

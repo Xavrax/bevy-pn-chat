@@ -14,7 +14,7 @@ use pubnub::{
 use self::{
     messages::message_handler,
     resources::{
-        ChannelResource, ChatMessageStyle, InputBoxStyle, PubNubClientResource,
+        ChannelResource, ChatMessageStyle, InputBoxStyle, MessageFormat, PubNubClientResource,
         PubNubSubscribeResource,
     },
     tasks::tasks_handler,
@@ -92,6 +92,7 @@ impl Plugin for ChatPlugin {
                 tr: "0".into(),
                 user_id: self.config.username.clone(),
             })
+            .insert_resource(MessageFormat(self.config.message_format.clone()))
             .insert_resource(ChannelResource(self.config.channel.clone()))
             .add_startup_system(plugin_startup)
             .add_system(keyboard_handler)
